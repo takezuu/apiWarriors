@@ -3,13 +3,7 @@ const context = canvas.getContext('2d');
 const timerElement = document.getElementById('timer');
 const messageElement = document.getElementById('message');
 
-const cellSize = 60;
-const mazeWidth = 10;
-const mazeHeight = 10;
-const mazeDepth = 3;
-const directions = [
-    [-1, 0], [1, 0], [0, -1], [0, 1]
-];
+
 
 const visibilityRadius = 3; // Радиус видимости
 let darknessMode = true; // Переменная для режима темноты
@@ -23,7 +17,9 @@ teleportImg.src = 'static/ladder.png'; // Иконка для точек тел�
 const exitImg = new Image();
 exitImg.src = 'static/exit.png'; // Иконка для конечной точки
 
-let maze = generateMaze(mazeWidth, mazeHeight, mazeDepth);
+let maze = 0;
+
+
 let playerPos = { level: 0, row: 0, col: 0 };
 let startTime;
 let currentFloorStartTime;
@@ -31,67 +27,30 @@ let timerId;  // Новый идентификатор таймера
 
 document.addEventListener('keydown', handleKeyPress);
 
-function generateMaze(width, height, depth) {
-    const maze = Array.from({ length: depth }, () => 
-        Array.from({ length: height }, () => 
-            Array.from({ length: width }, () => 0)
-        )
-    );
-
-    for (let d = 0; d < depth; d++) {
-        const stack = [[0, 0]];
-        maze[d][0][0] = 1;
-
-        while (stack.length > 0) {
-            const current = stack[stack.length - 1];
-            const [currentRow, currentCol] = current;
-            const neighbors = [];
-
-            shuffle(directions);
-
-            for (const [dr, dc] of directions) {
-                const newRow = currentRow + dr;
-                const newCol = currentCol + dc;
-
-                if (newRow >= 0 && newRow < height && newCol >= 0 && newCol < width && maze[d][newRow][newCol] === 0) {
-                    let countWalls = 0;
-                    for (const [dr2, dc2] of directions) {
-                        const checkRow = newRow + dr2;
-                        const checkCol = newCol + dc2;
-                        if (checkRow < 0 || checkRow >= height || checkCol < 0 || checkCol >= width || maze[d][checkRow][checkCol] === 0) {
-                            countWalls++;
-                        }
-                    }
-
-                    if (countWalls >= 3) {
-                        neighbors.push([newRow, newCol]);
-                    }
-                }
-            }
-
-            if (neighbors.length > 0) {
-                const next = neighbors[Math.floor(Math.random() * neighbors.length)];
-                stack.push(next);
-                maze[d][next[0]][next[1]] = 1;
-            } else {
-                stack.pop();
-            }
+async function getMapData() {
+    try {
+        const response = await fetch('/map');
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
         }
-    }
-
-    for (let d = 0; d < depth - 1; d++) {
-        maze[d][Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = 2; // Set teleport points
-    }
-    maze[depth - 1][height - 1][width - 1] = 3;  // Mark end point
-    return maze;
-}
-
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
     }
 }
+
+// Пример использования функции
+getMapData().then(data => {
+    if (data) {
+        // Записываем данные в переменную
+        maze = data;
+//        console.log(maze);
+	drawMaze();
+    }
+});
+
+
 
 function handleKeyPress(event) {
     if (!startTime) {
@@ -164,13 +123,15 @@ function drawMaze() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const currentLevel = playerPos.level;
-
+    
     context.fillStyle = '#8B4513'; // Коричневый цвет для стен
-
+    console.log(maze)
     for (let row = 0; row < mazeHeight; row++) {
         for (let col = 0; col < mazeWidth; col++) {
             const distance = Math.abs(row - playerPos.row) + Math.abs(col - playerPos.col);
             if (!darknessMode || distance <= visibilityRadius) {
+		
+		
                 if (maze[currentLevel][row][col] === 0) {
                     context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
                 }
@@ -191,4 +152,4 @@ function drawMaze() {
 }
 
 // Начальная отрисовка лабиринта
-drawMaze();
+//drawMaze();

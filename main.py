@@ -6,13 +6,37 @@ from fastapi.responses import FileResponse
 
 app = FastAPI()
 
-templates = Jinja2Templates(directory='templates')
+templates = Jinja2Templates(directory='apiWarriors')
 
 
-@app.get("/", response_class=HTMLResponse)
-async def maze(request: Request):
-    context = {'request': request}
-    return templates.TemplateResponse("maze.html", context)
+@app.get("/", response_class=FileResponse)
+async def maze():
+    return "maze.html"
+
+
+@app.get("/static/game.js", response_class=FileResponse)
+async def maze():
+    return "static/game.js"
+
+
+@app.get("/static/test.js", response_class=FileResponse)
+async def maze():
+    return "static/test.js"
+
+
+@app.get("/static/player.png", response_class=FileResponse)
+async def maze():
+    return "static/player.png"
+
+
+@app.get("/static/ladder.png", response_class=FileResponse)
+async def maze():
+    return "static/ladder.png"
+
+
+@app.get("/static/exit.png", response_class=FileResponse)
+async def maze():
+    return "static/exit.png"
 
 
 @app.get("/map")
@@ -31,15 +55,13 @@ async def generate_maze():
             current_row, current_col = current
             neighbors = []
 
-            for i in range(len(directions) - 1, 0, -1):
-                j = random.randint(0, i)
-                directions[i], directions[j] = directions[j, directions[i]]
+            random.shuffle(directions)
 
             for dr, dc in directions:
                 new_row = current_row + dr
                 new_col = current_col + dc
 
-                if height > new_row >= 0 == g_maze[d][new_row][new_col] and 0 <= new_col < width:
+                if 0 <= new_row < height and 0 <= new_col < width and maze[d][new_row][new_col] == 0:
                     count_walls = 0
                     for dr2, dc2 in directions:
                         check_row = new_row + dr2
@@ -63,5 +85,5 @@ async def generate_maze():
         g_maze[d][random.randint(0, height - 1)][random.randint(0, width - 1)] = 2  # Set teleport points
 
     g_maze[depth - 1][height - 1][width - 1] = 3  # Mark end point
-
+    print(g_maze)
     return g_maze

@@ -44,6 +44,20 @@ async def maze():
     return "favicon.ico"
 
 
+@app.get("/static/wall.png", response_class=FileResponse)
+async def maze():
+    return "static/wall.png"
+
+@app.get("/static/styles.css", response_class=FileResponse)
+async def maze():
+    return "static/styles.css"
+
+
+@app.get("/static/floor.png", response_class=FileResponse)
+async def maze():
+    return "static/floor.png"
+
+
 
 directions = [
     (-1, 0), (1, 0), (0, -1), (0, 1)
@@ -55,7 +69,7 @@ def shuffle(array):
 
 @app.get("/map", )
 async def generate_maze():
-    width = 10
+    width = 20
     height = 10
     depth = 3
     maze = [[[0 for _ in range(width)] for _ in range(height)] for _ in range(depth)]

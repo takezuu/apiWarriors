@@ -23,13 +23,9 @@ teleportImg.src = 'static/ladder.png'; // Иконка для точек тел�
 const exitImg = new Image();
 exitImg.src = 'static/exit.png'; // Иконка для конечной точки
 
-const wallImg = new Image();
-wallImg.src = 'static/wall.png'; // Иконка для стен
-
-const floorImg = new Image();
-floorImg.src = 'static/floor.png'; // Иконка для пола
-
 let maze = 0;
+
+
 let playerPos = { level: 0, row: 0, col: 0 };
 let startTime;
 let currentFloorStartTime;
@@ -50,8 +46,6 @@ async function getMapData() {
     }
 }
 
-
-
 // Пример использования функции
 getMapData().then(data => {
     if (data) {
@@ -59,11 +53,73 @@ getMapData().then(data => {
         maze = data;
 //        console.log(maze);
 	drawMaze();
-
-
     }
 });
 
+
+
+
+function generateMaze(width, height, depth) {
+    const maze = Array.from({ length: depth }, () => 
+        Array.from({ length: height }, () => 
+            Array.from({ length: width }, () => 0)
+        )
+    );
+
+    for (let d = 0; d < depth; d++) {
+        const stack = [[0, 0]];
+        maze[d][0][0] = 1;
+
+        while (stack.length > 0) {
+            const current = stack[stack.length - 1];
+            const [currentRow, currentCol] = current;
+            const neighbors = [];
+
+            shuffle(directions);
+
+            for (const [dr, dc] of directions) {
+                const newRow = currentRow + dr;
+                const newCol = currentCol + dc;
+
+                if (newRow >= 0 && newRow < height && newCol >= 0 && newCol < width && maze[d][newRow][newCol] === 0) {
+                    let countWalls = 0;
+                    for (const [dr2, dc2] of directions) {
+                        const checkRow = newRow + dr2;
+                        const checkCol = newCol + dc2;
+                        if (checkRow < 0 || checkRow >= height || checkCol < 0 || checkCol >= width || maze[d][checkRow][checkCol] === 0) {
+                            countWalls++;
+                        }
+                    }
+
+                    if (countWalls >= 3) {
+                        neighbors.push([newRow, newCol]);
+                    }
+                }
+            }
+
+            if (neighbors.length > 0) {
+                const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                stack.push(next);
+                maze[d][next[0]][next[1]] = 1;
+            } else {
+                stack.pop();
+            }
+        }
+    }
+
+    for (let d = 0; d < depth - 1; d++) {
+        maze[d][Math.floor(Math.random() * height)][Math.floor(Math.random() * width)] = 2; // Set teleport points
+    }
+    maze[depth - 1][height - 1][width - 1] = 3;  // Mark end point
+    return maze;
+}
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
 
 function handleKeyPress(event) {
     if (!startTime) {
@@ -132,24 +188,27 @@ function displayCompletionMessage() {
 function drawMaze() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    context.fillStyle = '#141414'; // Темно-серый фон
+    context.fillStyle = '#111111'; //  фон
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const currentLevel = playerPos.level;
-
+    
+    context.fillStyle = '#301406'; //  цвет для стен
+    console.log(maze)
     for (let row = 0; row < mazeHeight; row++) {
         for (let col = 0; col < mazeWidth; col++) {
             const distance = Math.abs(row - playerPos.row) + Math.abs(col - playerPos.col);
             if (!darknessMode || distance <= visibilityRadius) {
+		
+		
                 if (maze[currentLevel][row][col] === 0) {
-                    context.drawImage(wallImg, col * cellSize, row * cellSize, cellSize, cellSize);
-                } else {
-                    context.drawImage(floorImg, col * cellSize, row * cellSize, cellSize, cellSize);
+                    context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
                 }
-
+                // Телепорт
                 if (maze[currentLevel][row][col] === 2) {
                     context.drawImage(teleportImg, col * cellSize, row * cellSize, cellSize, cellSize);
                 }
+                // Конечная точка
                 if (currentLevel === mazeDepth - 1 && row === mazeHeight - 1 && col === mazeWidth - 1) {
                     context.drawImage(exitImg, col * cellSize, row * cellSize, cellSize, cellSize);
                 }
@@ -158,7 +217,8 @@ function drawMaze() {
     }
 
     // Рисуем игрока
-	context.drawImage(playerImg, playerPos.col * cellSize, playerPos.row * cellSize, cellSize, cellSize);
+    context.drawImage(playerImg, playerPos.col * cellSize, playerPos.row * cellSize, cellSize, cellSize);
 }
 
-
+// Начальная отрисовка лабиринта
+//drawMaze();

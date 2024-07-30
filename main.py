@@ -16,7 +16,9 @@ async def maze(request: Request):
 
 
 @app.get("/map")
-async def generate_maze(width, height, depth):
+async def generate_maze():
+    width = height = 10
+    depth = 3
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
     g_maze = [[[0 for _ in range(width)] for _ in range(height)] for _ in range(depth)]
 

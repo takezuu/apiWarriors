@@ -8,7 +8,10 @@ const mazeWidth = 20;
 const mazeHeight = 10;
 const mazeDepth = 3;
 const directions = [
-    [-1, 0], [1, 0], [0, -1], [0, 1]
+    [-1, 0],
+    [1, 0],
+    [0, -1],
+    [0, 1]
 ];
 
 const visibilityRadius = 3; // Радиус видимости
@@ -30,10 +33,14 @@ const floorImg = new Image();
 floorImg.src = 'static/floor.png'; // Иконка для пола
 
 let maze = 0;
-let playerPos = { level: 0, row: 0, col: 0 };
+let playerPos = {
+    level: 0,
+    row: 0,
+    col: 0
+};
 let startTime;
 let currentFloorStartTime;
-let timerId;  // Новый идентификатор таймера
+let timerId; // Новый идентификатор таймера
 
 document.addEventListener('keydown', handleKeyPress);
 
@@ -52,18 +59,17 @@ async function getMapData() {
 
 
 
-window.onhold = function() {
+addEventListener("load", (event) => {
 
-// Пример использования функции
-	getMapData().then(data => {
-		if (data) {
-			// Записываем данные в переменную
-			maze = data;
-	//        console.log(maze);
-			drawMaze();
-		}
-});};
-
+    getMapData().then(data => {
+        if (data) {
+            // Записываем данные в переменную
+            maze = data;
+            //        console.log(maze);
+            drawMaze();
+        }
+    });
+});
 
 function handleKeyPress(event) {
     if (!startTime) {
@@ -72,7 +78,9 @@ function handleKeyPress(event) {
         updateTimer();
     }
 
-    const newPos = { ...playerPos };
+    const newPos = {
+        ...playerPos
+    };
     if (event.key === 'ArrowLeft') {
         newPos.col--;
     } else if (event.key === 'ArrowRight') {
@@ -126,7 +134,7 @@ function displayCompletionMessage() {
     const totalTime = Math.floor((Date.now() - startTime) / 1000);
     messageElement.textContent = `Congratulations! You completed the maze in ${totalTime} seconds.`;
     document.removeEventListener('keydown', handleKeyPress);
-    cancelAnimationFrame(timerId);  // Остановка таймера
+    cancelAnimationFrame(timerId); // Остановка таймера
 }
 
 function drawMaze() {
@@ -158,7 +166,5 @@ function drawMaze() {
     }
 
     // Рисуем игрока
-	context.drawImage(playerImg, playerPos.col * cellSize, playerPos.row * cellSize, cellSize, cellSize);
+    context.drawImage(playerImg, playerPos.col * cellSize, playerPos.row * cellSize, cellSize, cellSize);
 }
-
-

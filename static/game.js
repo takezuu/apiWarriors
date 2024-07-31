@@ -52,17 +52,17 @@ async function getMapData() {
 
 
 
+window.onhold = function() {
+
 // Пример использования функции
-getMapData().then(data => {
-    if (data) {
-        // Записываем данные в переменную
-        maze = data;
-//        console.log(maze);
-	drawMaze();
-
-
-    }
-});
+	getMapData().then(data => {
+		if (data) {
+			// Записываем данные в переменную
+			maze = data;
+	//        console.log(maze);
+			drawMaze();
+		}
+});};
 
 
 function handleKeyPress(event) {
